@@ -33,7 +33,7 @@ def num_field(col, use_slider=False, step=0.1):
   low, high = float(scaler.data_min_[i]), float(scaler.data_max_[i])
   mean_val = round(float(imputer.statistics_[i]), 2)
   mean_val = max(low, min(high, mean_val))
-  if not st.checkbox(f"{col} (сер. {mean_val})", value=False):
+  if not st.checkbox(f"{col}", value=False):
     return np.nan
   if use_slider:
     return st.slider(
@@ -56,12 +56,13 @@ def num_field(col, use_slider=False, step=0.1):
 
 st.title("Прогноз дощу в Австралії")
 st.markdown(
-    "Хочете визначити чи буде завтра падати дощ? Заповніть необхідні дані та"
-    " модель логістичної регресії дасть вам відповідь."
+    "Хочете дізнатися, чи падатиме завтра дощ?\n\n"
+    "Заповніть відомі сьогоднішні показники погоди і **модель логістичної регресії** "
+    "розрахує прогноз на завтра."
 )
 
-st.header("Введіть значення сьогоднішніх вимірів")
-col1, col2, col3 = st.columns(3)
+st.header("Введіть значення сьогоднішніх вимірів:")
+col1, col2, col3, col4, col5 = st.columns(5)
 
 data = {}
 
@@ -73,33 +74,49 @@ with col1:
 
 with col2:
   for col in [
+      "MinTemp",
+      "MaxTemp",
+      "Temp9am",
+      "Temp3pm",
+  ]:
+    data[col] = num_field(col, use_slider=True, step=0.1)
+
+with col3:
+  for col in [
       "WindGustSpeed",
       "WindSpeed9am",
       "WindSpeed3pm",
+  ]:
+    data[col] = num_field(col, use_slider=True, step=0.5)
+
+with col4:
+  for col in [
       "Humidity9am",
       "Humidity3pm",
       "Cloud9am",
       "Cloud3pm",
   ]:
-    data[col] = num_field(col, use_slider=True, step=1.0)
+    data[col] = num_field(col, use_slider=True, step=0.5)
 
-with col3:
+with col5:
+  for col in ["Sunshine"]:
+    data[col] = num_field(col, use_slider=True, step=0.5)
   for col in [
-      "MinTemp",
-      "MaxTemp",
       "Rainfall",
       "Evaporation",
-      "Sunshine",
       "Pressure9am",
       "Pressure3pm",
-      "Temp9am",
-      "Temp3pm",
   ]:
     data[col] = num_field(
         col, use_slider=False, step=0.2 if col == "Rainfall" else 0.1
     )
-
-if st.button("Визначити чи буде завтра дощ"):
+      
+if st.button("Зробити прогноз"):
   pred, prob, all_probs = predict(data)
-  st.success(f"Прогноз: **{pred}** (ймовірність: **{prob:.2%}**)")
-  st.write("Ймовірності по класах:", all_probs)
+  if str(pred) == "No":
+    st.success(f"Прогноз: Завтра опадів не передбачається (ймовірність: **{prob:.2%}**)")
+    st.image('images/sun.jpg', width="stretch")
+  else:
+    st.warning(f"Прогноз: Очікуйте завтра дощ (ймовірність: **{prob:.2%}**)")
+    st.image('images/rain.webp', width="stretch")
+  
