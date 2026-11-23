@@ -111,7 +111,7 @@ with col5:
         col, use_slider=False, step=0.2 if col == "Rainfall" else 0.1
     )
       
-if st.button("Зробити прогноз"):
+if st.button("Зробити прогноз", width="stretch"):
   pred, prob, all_probs = predict(data)
   if str(pred) == "No":
     st.success(f"Прогноз: Завтра опадів не передбачається (ймовірність: **{prob:.2%}**)")
